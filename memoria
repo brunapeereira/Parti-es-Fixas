@@ -1,0 +1,37 @@
+package trabsmemoriafixa;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class Memoria extends Thread{
+
+	private final int tamanhoMemoria;
+	private List<Particoes> particoes;
+	
+	public Memoria(int tamanhoMemoria)
+	{
+		this.tamanhoMemoria = tamanhoMemoria;
+	}
+
+	public List<Particoes> getParticoes() {
+		return particoes;
+	}
+
+
+        @Override
+	public void run(){
+
+		final int tamanhoParticoes = tamanhoMemoria / 10;
+        	particoes = new ArrayList<>();
+
+		for(int i = 0; i < 10; i++){
+			particoes.add( new Particoes(tamanhoParticoes) );
+		}
+
+	}
+}
+
+//Nessa função adicionamos uma memoria em uma partição
+//informamos o tamanho da memoria e chamamos a função Particoes onde
+//criamos uma nova partição e atribuimos a ela o tamanho dela baseado 
+//no tamanho da memoria
