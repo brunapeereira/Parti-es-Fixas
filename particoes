@@ -1,0 +1,37 @@
+package trabsmemoriafixa;
+
+public class Particoes {
+
+    private int tamanho;
+    private int pidProcesso;
+    private int tamanhoUtilizadoParticao; 
+
+    Particoes(int tamanho){
+        this.tamanho = tamanho;
+    }
+
+    public int getTamanho() {
+        return tamanho;
+    }
+
+
+    public int getpidProcesso() {
+        return pidProcesso;
+    }
+
+    public void setpidProcesso(int pidProcesso) {
+        this.pidProcesso = pidProcesso;
+    }
+
+    public int gettamanhoUtilizadoParticao() {
+        return tamanhoUtilizadoParticao;
+    }
+
+    public void settamanhoUtilizadoParticao(int tamanhoUtilizadoParticao) {
+        this.tamanhoUtilizadoParticao = tamanhoUtilizadoParticao;
+    }
+}
+
+//Nessa função temos as partições do CPU com o tamnho da partição,
+//o pid do processo que vai para determinada partição e o espaço que o pid vai utilizar
+//na partição
