@@ -1,0 +1,136 @@
+package trabsmemoriafixa;
+
+import trabsmemoriafixa.Memoria.Memoria;
+import trabsmemoriafixa.Particoes.Particoes;
+import trabsmemoriafixa.Processo.Processo;
+
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+public class Alocador extends Thread{
+
+//declarando as variaveis
+	private Memoria memoria;
+	private List<Processo> processos;
+	private int fragmentado;
+	private int executado;
+	private int naoExecutado;
+	private int tempoExecucao;
+	private List<String> logExport;
+
+//alocando a função memoria na função processo
+	public Alocador(Memoria memoria, List<Processo> processos)
+	{
+	    this.memoria = memoria;
+	    this.processos = processos;
+	    this.logExport = new ArrayList<>();
+	}
+	
+	
+        @Override
+	public void run()
+	{
+        Iterator<Processo> iteratorProcesso = processos.iterator();
+//Iterator = prover uma forma de sequencialmente acessar os elementos de uma coleção sem expor sua representação interna
+
+        while(iteratorProcesso.hasNext()) { //enquanto tiver processo na fila ele vai pegando pelo pid
+
+            Processo processo = iteratorProcesso.next();//o que usar no lugar do next pq está dandoerrado?
+            System.out.println("Vou executar o processo de pid: " + processo.getPid());
+
+            Iterator<Particoes> iterator = memoria.getParticoes().iterator(); //vai passar a memoria para a função de particoes
+
+            while (iterator.hasNext()) {
+
+                Particoes particoes = iterator.next();
+
+                if (particoes.getPidProcesso() == 0) {
+
+                    particoes.setPidProcesso(processo.getPid()); //passa a informação do pid 
+                    particoes.settamanhoUtilizadoParticao(processo.getSize()); //passa o tamanho que vai ser utilizado
+
+                    synchronized (processo) {
+                        processo.setrodando(true);
+                        executado++; //depois de terminar um  processo
+                    }
+
+                    if (processo.gettamanho() < particoes.gettamanho()) { //se o tamanho do processo for menor q a partição faz a fragmentação
+                  
+                        System.out.println("Houve fragmentacao interna");
+                        fragmentado++;
+                        break;
+                    }
+
+                } else { //caso contrario tenta em outra partição
+
+                    System.out.println("Partição ocupada! Vou para a proxima partição");
+
+                    Processo processoExecutando = processos.get(particoes.getPidProcesso() - 1);
+
+                    synchronized (particoes) {// synchronized = garante que o processo só vai ser executado por uma thread
+                        synchronized (processoExecutando) {
+
+                            int tempoCPU = processoExecutando.gettempoCPU(); // pega o tempo de cpu da função processo
+                            processoExecutando.settempoCPU(--tempoCPU); // tira do processo o tempo de cpu necessario para finalizar
+                            System.out.println("Decrementando o tempo de cpu time do processo: " + processoExecutando.getPid() + " Tempo para finalizar, " + processoExecutando.gettempoCPU() + " Unidades de CPU");
+                        }
+                    }
+
+                    if (processoExecutando.gettempoCPU() <= 0) { // termina um processo e se a partição estiver livre coloca o proximo processo se tiver
+                        
+                        System.out.println("Processo " + processoExecutando.getPid() + " Terminou! ");
+
+                        synchronized (particoes) {
+                            synchronized (processoExecutando) {
+                                processoExecutando.setrodando(false);
+                                
+                                System.out.println("Vou aproveitar e colocar esse outro processo! Colocando processo: " + processo.getPid());
+                                executado++;
+                            }
+                        }
+
+                        particoes.setPidProcesso(processo.getPid());
+                        particoes.settamanhoUtilizadoParticao(processo.gettamanho());
+
+                        synchronized (processo) {
+                            processo.setrodando(true);
+                        }
+
+                        if (processo.gettamanho() < particoes.gettamanho()) { // se o tamanho do processo for menor que a partiçao faz a fragmentação
+                            logExport.add("Houve fragmentacao externa");
+                            System.out.println("Houve fragmentacao externa");
+                            fragmentado++;
+                        }
+
+                        break;
+                    }
+                }
+
+            }
+
+            tempoExecucao++;
+
+            if (!processo.isrodando()) { // se não estiver rodando(ou acabou os processos, talvez) ele não executa 
+                System.out.println("Não foi possível encontrar partição, Houve uma fragmentacao!");
+                naoExecutado++;
+            }
+        }
+
+       
+	}
+
+    public void printFinalRelatorio() {
+        System.out.println();
+        System.out.println("\n");
+        System.out.println("================== Memoria Finalizada ============== ");
+	    System.out.println("Tempo Total de Execução: " + tempoExecucao + " unidades de CPU ");
+	    System.out.println("Total de fragmentação interna: " + fragmentado);
+	    System.out.println("Tempo medio de execução: " + (tempoExecucao / executado) + " unidades de CPU ");
+	    System.out.println("Processos executados: " + executado);
+	    System.out.println("Processos descartados: " + naoExecutado);
+	    System.out.println("====================================================");
+
+    }
+}
