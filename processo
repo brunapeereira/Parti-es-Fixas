@@ -1,0 +1,50 @@
+package trabsmemoriafixa;
+
+public class Processo {
+    
+    private int pid;
+    private int tamanho;
+    private int tempoCPU; 
+private boolean rodando;
+    
+    public Processo(int pid, int tamanho, int tempoCPU) {
+        this.pid = pid;
+        this.tamanho = tamanho;
+        this.tempoCPU = tempoCPU;
+    }
+
+    public int getTamanho() {
+        return tamanho;
+    }
+
+    public int getPid() {
+        return pid;
+    }
+
+    public synchronized boolean isrodando() {
+        return rodando;
+    }
+
+    public synchronized void setrodando(boolean rodando) {
+        this.rodando = rodando;
+    }
+
+    public synchronized int gettempoCPU() {
+        return tempoCPU;
+    }
+
+    public synchronized void settempoCPU(int tempoCPU) {
+        this.tempoCPU = tempoCPU;
+    }
+}
+
+// Aqui eu crio o processo de alocar a memoria na cpu, então eu tenho o pid(id), o tamanho 
+//do processo e o tempo de cpu(tempo q leva para ser executado)
+
+
+ //A palavra reservada synchronized serve para impedir que duas ou mais Threads 
+ //acessem um método com esta designação, pois em algumas situações se duas ou mais 
+ //Threads acessarem o mesmo método podem ocorrer inconsistências terríveis
+
+//Um PID (Process Identifier) é um número de identificação que o sistema dá a cada
+//processo
